@@ -125,7 +125,7 @@ class Maze:
     def blocks(self):
         """Making random blocks for maze"""
         # maximum possible number of blocks in a 10x10 nodes is 90
-        blocknum = randrange(30, 60)
+        blocknum = randrange(60, 90)
         print(f'{yellow}generating {blocknum} blocks...{end}')
         for num in range(blocknum):
             blocked = False
@@ -144,45 +144,45 @@ class Maze:
                 if Direction.up in self.nodes[i, j].blocked_directions:
                     top[i] = top[i] + f' {red}-{end} '
                 else:
-                    top[i] = top[i] + ' - '
+                    top[i] = top[i] + '   '
         rl = [''] * 10
         for i in range(10):
             for j in range(10):
                 if Direction.left in self.nodes[i, j].blocked_directions and Direction.right in self.nodes[i, j].blocked_directions:
                     if goal.x == i and goal.y == j:
-                        rl[i] = rl[i] + f'{red}|{green}G{end}|{end}'
+                        rl[i] = rl[i] + f'{red}|{green}G{end}{red}|{end}'
                     elif me.x == i and me.y == j:
-                        rl[i] = rl[i] + f'{red}|{green}*{end}|{end}'
+                        rl[i] = rl[i] + f'{red}|{green}*{end}{red}|{end}'
                     else:
                         rl[i] = rl[i] + f'{red}| |{end}'
                 elif Direction.left in self.nodes[i, j].blocked_directions:
                     if goal.x == i and goal.y == j:
-                        rl[i] = rl[i] + f'{red}|{green}G{end}{end}|'
+                        rl[i] = rl[i] + f'{red}|{green}G{end}{end} '
                     elif me.x == i and me.y == j:
-                        rl[i] = rl[i] + f'{red}|{green}*{end}{end}|'
+                        rl[i] = rl[i] + f'{red}|{green}*{end}{end} '
                     else:
-                        rl[i] = rl[i] + f'{red}|{end} |'
+                        rl[i] = rl[i] + f'{red}|{end}  '
                 elif Direction.right in self.nodes[i, j].blocked_directions:
                     if goal.x == i and goal.y == j:
-                        rl[i] = rl[i] + f'|{green}G{end}{red}|{end}'
+                        rl[i] = rl[i] + f' {green}G{end}{red}|{end}'
                     elif me.x == i and me.y == j:
-                        rl[i] = rl[i] + f'|{red}{green}*{end}|{end}'
+                        rl[i] = rl[i] + f' {green}*{end}{red}|{end}'
                     else:
-                        rl[i] = rl[i] + f'| {red}|{end}'
+                        rl[i] = rl[i] + f'  {red}|{end}'
                 else:
                     if goal.x == i and goal.y == j:
-                        rl[i] = rl[i] + f'|{green}G{end}|'
+                        rl[i] = rl[i] + f' {green}G{end} '
                     elif goal.x == i and goal.y == j:
-                        rl[i] = rl[i] + f'|{green}*{end}|'
+                        rl[i] = rl[i] + f' {green}*{end} '
                     else:
-                        rl[i] = rl[i] + f'| |'
+                        rl[i] = rl[i] + f'   '
         down = [''] * 10
         for i in range(10):
             for j in range(10):
                 if Direction.down in self.nodes[i, j].blocked_directions:
                     down[i] = down[i] + f' {red}-{end} '
                 else:
-                    down[i] = down[i] + f' - '
+                    down[i] = down[i] + f'   '
         output = ''
         for i in range(10):
             output = output + top[i] + '\n' + rl[i] + '\n' + down[i] + '\n'
