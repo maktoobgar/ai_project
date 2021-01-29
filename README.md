@@ -5,8 +5,8 @@ Hope everyone like it.
 
 ## Maze Problem
 Maze problem is solved with A* algorithm.\
-For more details about implementation, read [README](maze_problem/README.md) in the "**maze_problem**" folder.
-Output test of the project is something like this:
+For more details about implementation, read [README](maze_problem/README.md) in the "**maze_problem**" folder.\
+Output test of the project is something like this:\
 <img src="maze_problem/output.png"
      alt="maze problem"
      style="float: left; margin-right: 10px;" />
