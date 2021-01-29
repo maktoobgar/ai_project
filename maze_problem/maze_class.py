@@ -2,7 +2,7 @@ from random import randrange
 from enum import Enum
 
 
-class bcolors:
+class Colors:
     """Just a color class for showing results in colors"""
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -397,10 +397,10 @@ class Environment:
         return self.maze
 
 
-red = f'{bcolors.FAIL}{bcolors.BOLD}'
-green = f'{bcolors.OKGREEN}{bcolors.BOLD}'
-yellow = f'{bcolors.BOLD}{bcolors.WARNING}'
-end = f'{bcolors.ENDC}{bcolors.ENDC}'
+red = f'{Colors.FAIL}{Colors.BOLD}'
+green = f'{Colors.OKGREEN}{Colors.BOLD}'
+yellow = f'{Colors.BOLD}{Colors.WARNING}'
+end = f'{Colors.ENDC}{Colors.ENDC}'
 get_dir = [Direction.right, Direction.left, Direction.up, Direction.down]
 me = Position(0, 0)
 goal = Position(9, 9)
