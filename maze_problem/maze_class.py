@@ -15,6 +15,12 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 
+class State(Enum):
+    """Describes how we finished the algorithm"""
+    Failure = 0
+    Victory = 1
+
+
 class Direction(Enum):
     """An enum for our moving directions for better code readability"""
     right = 0
@@ -40,7 +46,11 @@ class Node:
     def __init__(self, x, y):
         self.x = x
         self.y = y
+        self.f = None
+        self.g = None
         self.blocked_directions = []
+        self.parent = None
+        self.goto = None
         self.block_around()
     
     def block_around(self):
@@ -62,17 +72,25 @@ class Node:
         return True
         
     def has_permission(self, direction):
-        """Calls sizecheck function of neighbor node"""
+        """Calls sizecheck function of neighbor node on his direction side"""
         if direction == Direction.right and not direction in self.blocked_directions:
+            if self.y + 1 > 9:
+                return False
             if not maze.nodes[self.x, self.y + 1].sizecheck():
                 return False
         elif direction == Direction.left and not direction in self.blocked_directions:
+            if self.y - 1 < 0:
+                return False
             if self.y - 1 < 0 and not maze.nodes[self.x, self.y - 1].sizecheck():
                 return False
         elif direction == Direction.down and not direction in self.blocked_directions:
+            if self.x + 1 > 9:
+                return False
             if self.x + 1 > 9 and not maze.nodes[self.x + 1, self.y].sizecheck():
                 return False
         elif direction == Direction.up and not direction in self.blocked_directions:
+            if self.x - 1 < 0:
+                return False
             if self.x - 1 < 0 and not maze.nodes[self.x - 1, self.y].sizecheck():
                 return False
         return True
@@ -98,6 +116,19 @@ class Node:
             return False
         return True
     
+    def f_set(self, g):
+        self.g = g
+        self.f = g + self.h()
+        return self.f
+    
+    def h(self):
+        return abs(self.x - goal.x) + abs(self.y - goal.y)
+
+    def is_this_allowed(self, direction):
+        if direction in self.blocked_directions:
+            return False
+        return True
+
     def opposite(self, dir):
         """Returns opposite direction of dir"""
         if dir == Direction.left:
@@ -110,7 +141,10 @@ class Node:
             return Direction.up
     
     def __str__(self):
-        return "x: " + str(self.x) + ", y: " + str(self.y) + "\nblocked = " + str(self.blocked_directions)
+        if self.parent:
+            return "x: " + str(self.x) + ", y: " + str(self.y) + " - blocked = " + str(self.blocked_directions) + " - parent = x: " + str(self.parent.x) + ", y: " + str(self.parent.y)
+        else:
+            return "x: " + str(self.x) + ", y: " + str(self.y) + " - blocked = " + str(self.blocked_directions)
 
 
 class Maze:
@@ -157,30 +191,67 @@ class Maze:
                         rl[i] = rl[i] + f'{red}| |{end}'
                 elif Direction.left in self.nodes[i, j].blocked_directions:
                     if goal.x == i and goal.y == j:
-                        rl[i] = rl[i] + f'{red}|{green}G{end}{end} '
+                        if Direction.right == self.nodes[i, j].goto:
+                            rl[i] = rl[i] + f'{red}|{green}G{end}{end}{green}>{end}'
+                        else:
+                            rl[i] = rl[i] + f'{red}|{green}G{end}{end} '
                     elif me.x == i and me.y == j:
-                        rl[i] = rl[i] + f'{red}|{green}*{end}{end} '
+                        if Direction.right == self.nodes[i, j].goto:
+                            rl[i] = rl[i] + f'{red}|{green}*{end}{end}{green}>{end}'
+                        else:
+                            rl[i] = rl[i] + f'{red}|{green}*{end}{end} '
                     else:
-                        rl[i] = rl[i] + f'{red}|{end}  '
+                        if Direction.right == self.nodes[i, j].goto:
+                            rl[i] = rl[i] + f'{red}|{green} {end}{end}{green}>{end}'
+                        else:
+                            rl[i] = rl[i] + f'{red}|{end}  '
                 elif Direction.right in self.nodes[i, j].blocked_directions:
                     if goal.x == i and goal.y == j:
-                        rl[i] = rl[i] + f' {green}G{end}{red}|{end}'
+                        if Direction.left == self.nodes[i, j].goto:
+                            rl[i] = rl[i] + f'{green}<{end}{green}G{end}{red}|{end}'
+                        else:
+                            rl[i] = rl[i] + f' {green}G{end}{red}|{end}'
                     elif me.x == i and me.y == j:
-                        rl[i] = rl[i] + f' {green}*{end}{red}|{end}'
+                        if Direction.left == self.nodes[i, j].goto:
+                            rl[i] = rl[i] + f'{green}<{end}{green}*{end}{red}|{end}'
+                        else:
+                            rl[i] = rl[i] + f' {green}*{end}{red}|{end}'
                     else:
-                        rl[i] = rl[i] + f'  {red}|{end}'
+                        if Direction.left == self.nodes[i, j].goto:
+                            rl[i] = rl[i] + f'{green}<{end}{green} {end}{red}|{end}'
+                        else:
+                            rl[i] = rl[i] + f'  {red}|{end}'
                 else:
                     if goal.x == i and goal.y == j:
-                        rl[i] = rl[i] + f' {green}G{end} '
-                    elif goal.x == i and goal.y == j:
-                        rl[i] = rl[i] + f' {green}*{end} '
+                        if Direction.left == self.nodes[i, j].goto:
+                            rl[i] = rl[i] + f'{green}<{end}{green}G{end} '
+                        elif Direction.right == self.nodes[i, j].goto:
+                            rl[i] = rl[i] + f' {green}G{end}{green}>{end}'
+                        else:
+                            rl[i] = rl[i] + f' {green}G{end} '
+                    elif me.x == i and me.y == j:
+                        if Direction.left == self.nodes[i, j].goto:
+                            rl[i] = rl[i] + f'{green}<{end}{green}*{end} '
+                        elif Direction.right == self.nodes[i, j].goto:
+                            rl[i] = rl[i] + f' {green}*{end}{green}>{end}'
+                        else:
+                            rl[i] = rl[i] + f' {green}*{end} '
                     else:
-                        rl[i] = rl[i] + f'   '
+                        if Direction.left == self.nodes[i, j].goto:
+                            rl[i] = rl[i] + f'{green}<{end}{green} {end} '
+                        elif Direction.right == self.nodes[i, j].goto:
+                            rl[i] = rl[i] + f' {green} {end}{green}>{end}'
+                        else:
+                            rl[i] = rl[i] + f' {green} {end} '
         down = [''] * 10
         for i in range(10):
             for j in range(10):
                 if Direction.down in self.nodes[i, j].blocked_directions:
                     down[i] = down[i] + f' {red}-{end} '
+                elif Direction.down == self.nodes[i, j].goto:
+                    down[i] = down[i] + f' {green}v{end} '
+                elif Direction.up == self.nodes[i + 1, j].goto:
+                    down[i] = down[i] + f' {green}^{end} '
                 else:
                     down[i] = down[i] + f'   '
         output = ''
@@ -194,9 +265,133 @@ class Environment:
 
     def __init__(self):
         maze.blocks()
+        self.maze = maze
         self.me = me
         self.goal = goal
-        self.maze = maze
+        self.fringe = []
+        self.closed = []
+
+    def start_solve(self):
+        self.fringe = []
+        self.closed = []
+        node = maze.nodes[me.x, me.y]
+        node.f_set(0)
+        self.fringe.append(node)
+        print(self.solve())
+    
+    def solve(self):
+        while(True):
+            if not self.fringe:
+                return State.Failure
+            node = self.lowest_node()
+            if node.x == goal.x and node.y == goal.y:
+                return State.Victory
+            if node.is_this_allowed(Direction.up):
+                temp_node = maze.nodes[node.x - 1, node.y]
+                if temp_node in self.closed:
+                    tempf = temp_node.f
+                    if tempf > temp_node.f_set(node.g + 1):
+                        temp_node.parent = node
+                        self.closed.remove(temp_node)
+                        self.fringe.append(temp_node)
+                elif temp_node in self.fringe:
+                    tempf = temp_node.f
+                    tempg = temp_node.g
+                    if tempf < temp_node.f_set(node.g + 1):
+                        temp_node.f = tempf
+                        temp_node.g = tempg
+                    elif tempf > temp_node.f:
+                        temp_node.parent = node
+                else:
+                    temp_node.f_set(node.g + 1)
+                    temp_node.parent = node
+                    self.fringe.append(temp_node)
+            if node.is_this_allowed(Direction.down):
+                temp_node = maze.nodes[node.x + 1, node.y]
+                if temp_node in self.closed:
+                    tempf = temp_node.f
+                    if tempf > temp_node.f_set(node.g + 1):
+                        temp_node.parent = node
+                        self.closed.remove(temp_node)
+                        self.fringe.append(temp_node)
+                elif temp_node in self.fringe:
+                    tempf = temp_node.f
+                    tempg = temp_node.g
+                    if tempf < temp_node.f_set(node.g + 1):
+                        temp_node.f = tempf
+                        temp_node.g = tempg
+                    elif tempf > temp_node.f:
+                        temp_node.parent = node
+                else:
+                    temp_node.f_set(node.g + 1)
+                    temp_node.parent = node
+                    self.fringe.append(temp_node)
+            if node.is_this_allowed(Direction.right):
+                temp_node = maze.nodes[node.x, node.y + 1]
+                if temp_node in self.closed:
+                    tempf = temp_node.f
+                    if tempf > temp_node.f_set(node.g + 1):
+                        temp_node.parent = node
+                        self.closed.remove(temp_node)
+                        self.fringe.append(temp_node)
+                elif temp_node in self.fringe:
+                    tempf = temp_node.f
+                    tempg = temp_node.g
+                    if tempf < temp_node.f_set(node.g + 1):
+                        temp_node.f = tempf
+                        temp_node.g = tempg
+                    elif tempf > temp_node.f:
+                        temp_node.parent = node
+                else:
+                    temp_node.f_set(node.g + 1)
+                    temp_node.parent = node
+                    self.fringe.append(temp_node)
+            if node.is_this_allowed(Direction.left):
+                temp_node = maze.nodes[node.x, node.y - 1]
+                if temp_node in self.closed:
+                    tempf = temp_node.f
+                    if tempf > temp_node.f_set(node.g + 1):
+                        temp_node.parent = node
+                        self.closed.remove(temp_node)
+                        self.fringe.append(temp_node)
+                elif temp_node in self.fringe:
+                    tempf = temp_node.f
+                    tempg = temp_node.g
+                    if tempf < temp_node.f_set(node.g + 1):
+                        temp_node.f = tempf
+                        temp_node.g = tempg
+                    elif tempf > temp_node.f:
+                        temp_node.parent = node
+                else:
+                    temp_node.f_set(node.g + 1)
+                    temp_node.parent = node
+                    self.fringe.append(temp_node)
+    
+    def set_gotos(self):
+        node = maze.nodes[goal.x, goal.y]
+        parent = node.parent
+        while parent:
+            if parent.x - 1 == node.x:
+                parent.goto = Direction.up
+            elif parent.x + 1 == node.x:
+                parent.goto = Direction.down
+            elif parent.y - 1 == node.y:
+                parent.goto = Direction.left
+            elif parent.y + 1 == node.y:
+                parent.goto = Direction.right
+            node = parent
+            parent = parent.parent
+    
+    def lowest_node(self):
+        lowest = self.fringe[0]
+        lowest_index = 0
+        for i in range(len(self.fringe)):
+            if lowest.f > self.fringe[i].f:
+                lowest = self.fringe[i]
+                lowest_index = i
+        self.closed.append(lowest)
+        self.fringe.pop(lowest_index)
+        return lowest
 
     def __str__(self):
         return self.maze
