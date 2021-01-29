@@ -1,7 +1,13 @@
-from maze_class import Environment, goal, Position
+from maze_class import Environment
+from os import system
 
 
-goal = Position(5, 5)
+system("clear")
 world = Environment()
 input()
+print(world.maze)
+input()
+world.start_solve()
+input()
+world.set_gotos()
 print(world.maze)
