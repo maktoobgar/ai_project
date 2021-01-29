@@ -284,7 +284,10 @@ class Environment:
         node = maze.nodes[me.x, me.y]
         node.f_set(0)
         self.fringe.append(node)
-        print(self.solve())
+        situation = self.solve()
+        if situation == State.Victory:
+            self.set_gotos()
+        return situation
     
     def solve(self):
         """Actually solve the algorithm"""
@@ -404,7 +407,7 @@ class Environment:
         return lowest
 
     def __str__(self):
-        return self.maze
+        return self.maze.__str__()
 
 
 red = f'{Colors.FAIL}{Colors.BOLD}'
