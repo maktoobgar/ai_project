@@ -117,28 +117,20 @@ class Node:
         return True
     
     def f_set(self, g):
+        """Returns hueristic value of the node"""
         self.g = g
         self.f = g + self.h()
         return self.f
     
     def h(self):
+        """Returns estimated cost to the goal"""
         return abs(self.x - goal.x) + abs(self.y - goal.y)
 
     def is_this_allowed(self, direction):
+        """Determines if moving to the given direction in allowed or not"""
         if direction in self.blocked_directions:
             return False
         return True
-
-    def opposite(self, dir):
-        """Returns opposite direction of dir"""
-        if dir == Direction.left:
-            return Direction.right
-        elif dir == Direction.right:
-            return Direction.left
-        elif dir == Direction.up:
-            return Direction.down
-        elif dir == Direction.down:
-            return Direction.up
     
     def __str__(self):
         if self.parent:
@@ -172,13 +164,7 @@ class Maze:
         print(f'{green}generating the world is done.{end}')
 
     def __str__(self):
-        top = [''] * 10
-        for i in range(10):
-            for j in range(10):
-                if Direction.up in self.nodes[i, j].blocked_directions:
-                    top[i] = top[i] + f' {red}-{end} '
-                else:
-                    top[i] = top[i] + '   '
+        """Draw the maze"""
         rl = [''] * 10
         for i in range(10):
             for j in range(10):
@@ -247,16 +233,36 @@ class Maze:
         for i in range(10):
             for j in range(10):
                 if Direction.down in self.nodes[i, j].blocked_directions:
-                    down[i] = down[i] + f' {red}-{end} '
+                    if j == 0:
+                        down[i] = down[i] + f'{red}|--{end}'
+                    elif j == 9:
+                        down[i] = down[i] + f'{red}--|{end}'
+                    else:
+                        down[i] = down[i] + f'{red}---{end}'
                 elif Direction.down == self.nodes[i, j].goto:
-                    down[i] = down[i] + f' {green}v{end} '
+                    if j == 0:
+                        down[i] = down[i] + f'{red}|{end}{green}v{end} '
+                    elif j == 9:
+                        down[i] = down[i] + f' {green}v{end}{red}|{end}'
+                    else:
+                        down[i] = down[i] + f' {green}v{end} '
                 elif Direction.up == self.nodes[i + 1, j].goto:
-                    down[i] = down[i] + f' {green}^{end} '
+                    if j == 0:
+                        down[i] = down[i] + f'|{green}^{end} '
+                    elif j == 9:
+                        down[i] = down[i] + f' {green}^{end}|'
+                    else:
+                        down[i] = down[i] + f' {green}^{end} '
                 else:
-                    down[i] = down[i] + f'   '
-        output = ''
+                    if j == 0:
+                        down[i] = down[i] + f'{red}|  {end}'
+                    elif j == 9:
+                        down[i] = down[i] + f'{red}  |{end}'
+                    else:
+                        down[i] = down[i] + f'   '
+        output = f'{red}|--{end}' + f'{red}---{end}'*8 + f'{red}--|{end}' + '\n'
         for i in range(10):
-            output = output + top[i] + '\n' + rl[i] + '\n' + down[i] + '\n'
+            output = output + rl[i] + '\n' + down[i] + '\n'
         return output
 
 
@@ -272,6 +278,7 @@ class Environment:
         self.closed = []
 
     def start_solve(self):
+        """Initialization for A* Algorithm"""
         self.fringe = []
         self.closed = []
         node = maze.nodes[me.x, me.y]
@@ -280,6 +287,7 @@ class Environment:
         print(self.solve())
     
     def solve(self):
+        """Actually solve the algorithm"""
         while(True):
             if not self.fringe:
                 return State.Failure
@@ -368,6 +376,7 @@ class Environment:
                     self.fringe.append(temp_node)
     
     def set_gotos(self):
+        """Determine movement direction on nodes in path to the goal"""
         node = maze.nodes[goal.x, goal.y]
         parent = node.parent
         while parent:
@@ -383,6 +392,7 @@ class Environment:
             parent = parent.parent
     
     def lowest_node(self):
+        """Get the lowest cost node in the fringe"""
         lowest = self.fringe[0]
         lowest_index = 0
         for i in range(len(self.fringe)):
