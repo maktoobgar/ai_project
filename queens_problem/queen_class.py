@@ -26,12 +26,6 @@ class Direction(Enum):
     down = 3
 
 
-class State(Enum):
-    """Describes how we finished the algorithm"""
-    Failure = 0
-    Victory = 1
-
-
 class Node:
     """Node Class"""
     def __init__(self, x, y, queen):
