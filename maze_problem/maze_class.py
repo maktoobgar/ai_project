@@ -116,7 +116,7 @@ class Node:
             return False
         return True
     
-    def f_set(self, g):
+    def set_f(self, g):
         """Returns hueristic value of the node"""
         self.g = g
         self.f = g + self.h()
@@ -282,7 +282,7 @@ class Environment:
         self.fringe = []
         self.closed = []
         node = maze.nodes[me.x, me.y]
-        node.f_set(0)
+        node.set_f(0)
         self.fringe.append(node)
         situation = self.solve()
         if situation == State.Victory:
@@ -301,80 +301,80 @@ class Environment:
                 temp_node = maze.nodes[node.x - 1, node.y]
                 if temp_node in self.closed:
                     tempf = temp_node.f
-                    if tempf > temp_node.f_set(node.g + 1):
+                    if tempf > temp_node.set_f(node.g + 1):
                         temp_node.parent = node
                         self.closed.remove(temp_node)
                         self.fringe.append(temp_node)
                 elif temp_node in self.fringe:
                     tempf = temp_node.f
                     tempg = temp_node.g
-                    if tempf < temp_node.f_set(node.g + 1):
+                    if tempf < temp_node.set_f(node.g + 1):
                         temp_node.f = tempf
                         temp_node.g = tempg
                     elif tempf > temp_node.f:
                         temp_node.parent = node
                 else:
-                    temp_node.f_set(node.g + 1)
+                    temp_node.set_f(node.g + 1)
                     temp_node.parent = node
                     self.fringe.append(temp_node)
             if node.is_this_allowed(Direction.down):
                 temp_node = maze.nodes[node.x + 1, node.y]
                 if temp_node in self.closed:
                     tempf = temp_node.f
-                    if tempf > temp_node.f_set(node.g + 1):
+                    if tempf > temp_node.set_f(node.g + 1):
                         temp_node.parent = node
                         self.closed.remove(temp_node)
                         self.fringe.append(temp_node)
                 elif temp_node in self.fringe:
                     tempf = temp_node.f
                     tempg = temp_node.g
-                    if tempf < temp_node.f_set(node.g + 1):
+                    if tempf < temp_node.set_f(node.g + 1):
                         temp_node.f = tempf
                         temp_node.g = tempg
                     elif tempf > temp_node.f:
                         temp_node.parent = node
                 else:
-                    temp_node.f_set(node.g + 1)
+                    temp_node.set_f(node.g + 1)
                     temp_node.parent = node
                     self.fringe.append(temp_node)
             if node.is_this_allowed(Direction.right):
                 temp_node = maze.nodes[node.x, node.y + 1]
                 if temp_node in self.closed:
                     tempf = temp_node.f
-                    if tempf > temp_node.f_set(node.g + 1):
+                    if tempf > temp_node.set_f(node.g + 1):
                         temp_node.parent = node
                         self.closed.remove(temp_node)
                         self.fringe.append(temp_node)
                 elif temp_node in self.fringe:
                     tempf = temp_node.f
                     tempg = temp_node.g
-                    if tempf < temp_node.f_set(node.g + 1):
+                    if tempf < temp_node.set_f(node.g + 1):
                         temp_node.f = tempf
                         temp_node.g = tempg
                     elif tempf > temp_node.f:
                         temp_node.parent = node
                 else:
-                    temp_node.f_set(node.g + 1)
+                    temp_node.set_f(node.g + 1)
                     temp_node.parent = node
                     self.fringe.append(temp_node)
             if node.is_this_allowed(Direction.left):
                 temp_node = maze.nodes[node.x, node.y - 1]
                 if temp_node in self.closed:
                     tempf = temp_node.f
-                    if tempf > temp_node.f_set(node.g + 1):
+                    if tempf > temp_node.set_f(node.g + 1):
                         temp_node.parent = node
                         self.closed.remove(temp_node)
                         self.fringe.append(temp_node)
                 elif temp_node in self.fringe:
                     tempf = temp_node.f
                     tempg = temp_node.g
-                    if tempf < temp_node.f_set(node.g + 1):
+                    if tempf < temp_node.set_f(node.g + 1):
                         temp_node.f = tempf
                         temp_node.g = tempg
                     elif tempf > temp_node.f:
                         temp_node.parent = node
                 else:
-                    temp_node.f_set(node.g + 1)
+                    temp_node.set_f(node.g + 1)
                     temp_node.parent = node
                     self.fringe.append(temp_node)
     
