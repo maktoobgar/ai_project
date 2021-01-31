@@ -15,7 +15,7 @@ I declared 7 diffrent classes that are like this:
 The biggest class in the project.\
 This class involves the solving algorithm using __Simulated Anealing__.\
 There are two functions named "**start_solve**" and "**simulated_anealing**" that "**start_solve**" is a loop for starting "**simulated_anealing**" from diffrent positions.\
-"__simulated_anealing__" function returns nothing and everytime it is called, just changes the place of a queen to right or left or if it's the first move of node and we can't move right or left, we move the node to a random place in the same row.
+"__simulated_anealing__" function returns nothing and everytime it is called, just changes the place of a queen to best of 8 directions around the queen or if it's the first move of node and we can't move to anydirections, we move the node to a random place in the same row (the random move was optional and I think it worth it).
 ### Board Class
 __Board Class__ is the second biggest class after __Environment Class__.\
 This class has an 8x8 dictionary attribute named "__nodes__" with keys like (x, y) and values of __Node__ object.\
