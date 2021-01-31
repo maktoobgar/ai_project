@@ -24,6 +24,11 @@ class Direction(Enum):
     left = 1
     up = 2
     down = 3
+    right_up = 4
+    right_down = 5
+    left_up = 6
+    left_down = 7
+
 
 
 class Node:
@@ -104,9 +109,15 @@ class Board:
         for i in range(0, 8):
             for j in range(0, 8):
                 self.nodes[i, j] = Node(i, j, False)
-        for i in range(0, 8):
-            j = randrange(8)
-            self.nodes[i, j].set_queen(True)
+        for k in range(0, 8):
+            while True:
+                i = randrange(8)
+                j = randrange(8)
+                if self.nodes[i, j].queen:
+                    continue
+                else:
+                    self.nodes[i, j].set_queen(True)
+                    break
         
     def __str__(self):
         rl = [''] * 8
@@ -174,9 +185,9 @@ class Environment:
                 next.set_queen(True)
                 current = next
                 direction = self.direction(current, next)
+                #time.sleep(0.5)
                 #system("clear")
                 #print(self.board)
-                #time.sleep(0.01)
                 continue
             else:
                 rand = randrange(10)
@@ -185,9 +196,9 @@ class Environment:
                     next.set_queen(True)
                     current = next
                     direction = self.direction(current, next)
+                    #time.sleep(0.5)
                     #system("clear")
                     #print(self.board)
-                    #time.sleep(0.01)
                     continue
             break
 
@@ -196,37 +207,98 @@ class Environment:
             queen.set_f()
 
     def direction(self, current, next):
-        if current.y + 1 < 8:
-            if current.y < next.y:
-                return Direction.right
-        if current.y - 1 > -1:
-            if current.y > next.y:
-                return Direction.left
+        if current.y < next.y and current.x < next.x:
+            return Direction.right_down
+        elif current.y < next.y and current.x > next.x:
+            return Direction.right_up
+        elif current.y > next.y and current.x > next.x:
+            return Direction.left_up
+        elif current.y > next.y and current.x < next.x:
+            return Direction.left_down
+        elif current.y < next.y:
+            return Direction.right
+        elif current.y > next.y:
+            return Direction.left
+        elif current.x < next.x:
+            return Direction.down
+        elif current.x > next.x:
+            return Direction.up
     
     def next(self, current, direction, rand):
         if direction:
             if direction == Direction.left:
-                if current.y - 1 < 0:
+                if current.y - 1 < 0 or self.board.nodes[current.x, current.y - 1].queen:
                     return None
                 return self.board.nodes[current.x, current.y - 1]
             elif direction == Direction.right:
-                if current.y + 1 > 7:
+                if current.y + 1 > 7 or self.board.nodes[current.x, current.y + 1].queen:
                     return None
                 return self.board.nodes[current.x, current.y + 1]
+            if direction == Direction.up:
+                if current.x - 1 < 0 or self.board.nodes[current.x - 1, current.y].queen:
+                    return None
+                return self.board.nodes[current.x - 1, current.y]
+            if direction == Direction.down:
+                if current.x + 1 > 7 or self.board.nodes[current.x + 1, current.y].queen:
+                    return None
+                return self.board.nodes[current.x + 1, current.y]
+            elif direction == Direction.left_down:
+                if current.y - 1 < 0 or current.x + 1 > 7 or self.board.nodes[current.x + 1, current.y - 1].queen:
+                    return None
+                return self.board.nodes[current.x + 1, current.y + 1]
+            elif direction == Direction.left_up:
+                if current.y - 1 < 0 or current.x - 1 < 0 or self.board.nodes[current.x - 1, current.y - 1].queen:
+                    return None
+                return self.board.nodes[current.x - 1, current.y + 1]
+            elif direction == Direction.right_down:
+                if current.y + 1 > 7 or current.x + 1 > 7 or self.board.nodes[current.x + 1, current.y + 1].queen:
+                    return None
+                return self.board.nodes[current.x + 1, current.y + 1]
+            elif direction == Direction.right_up:
+                if current.y + 1 > 7 or current.x - 1 > 0 or self.board.nodes[current.x - 1, current.y + 1].queen:
+                    return None
+                return self.board.nodes[current.x - 1, current.y + 1]
+        best = current
+        if current.y - 1 > -1 and current.x - 1 > -1:
+            if best.f > self.board.nodes[current.x - 1, current.y - 1].set_f():
+                if not self.board.nodes[current.x - 1, current.y - 1].queen:
+                    best = self.board.nodes[current.x - 1, current.y - 1]
+        if current.y + 1 < 8 and current.x - 1 > -1:
+            if best.f > self.board.nodes[current.x - 1, current.y + 1].set_f():
+                if not self.board.nodes[current.x - 1, current.y + 1].queen:
+                    best = self.board.nodes[current.x - 1, current.y + 1]
+        if current.y - 1 > -1 and current.x + 1 < 8:
+            if best.f > self.board.nodes[current.x + 1, current.y - 1].set_f():
+                if not self.board.nodes[current.x + 1, current.y - 1].queen:
+                    best = self.board.nodes[current.x + 1, current.y - 1]
+        if current.y + 1 < 8 and current.x + 1 < 8:
+            if best.f > self.board.nodes[current.x + 1, current.y + 1].set_f():
+                if not self.board.nodes[current.x + 1, current.y + 1].queen:
+                    best = self.board.nodes[current.x + 1, current.y + 1]
         if current.y - 1 > -1:
-            if current.f > self.board.nodes[current.x, current.y - 1].set_f():
-                if current.y + 1 < 8:
-                    if self.board.nodes[current.x, current.y + 1].set_f() > self.board.nodes[current.x, current.y - 1].f:
-                        return self.board.nodes[current.x, current.y - 1]
-                return self.board.nodes[current.x, current.y - 1]
+            if best.f > self.board.nodes[current.x, current.y - 1].set_f():
+                if not self.board.nodes[current.x, current.y - 1].queen:
+                    best = self.board.nodes[current.x, current.y - 1]
         if current.y + 1 < 8:
-            if current.f > self.board.nodes[current.x, current.y + 1].set_f():
-                return self.board.nodes[current.x, current.y + 1]
+            if best.f > self.board.nodes[current.x, current.y + 1].set_f():
+                if not self.board.nodes[current.x, current.y + 1].queen:
+                    best = self.board.nodes[current.x, current.y + 1]
+        if current.x - 1 > -1:
+            if best.f > self.board.nodes[current.x - 1, current.y].set_f():
+                if not self.board.nodes[current.x - 1, current.y].queen:
+                    best = self.board.nodes[current.x - 1, current.y]
+        if current.x + 1 < 8:
+            if best.f > self.board.nodes[current.x + 1, current.y].set_f():
+                if not self.board.nodes[current.x + 1, current.y].queen:
+                    best = self.board.nodes[current.x + 1, current.y]
+        if best != current:
+            return best
         if rand:
             j = randrange(8)
             randresult = board.nodes[current.x, j]
             randresult.set_f()
-            return randresult
+            if not randresult.queen:
+                return randresult
         return None
 
     def cost(self):
