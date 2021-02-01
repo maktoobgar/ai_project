@@ -55,7 +55,7 @@ class Board:
     """The board that has a 3x3 plane to play"""
     def __init__(self):
         self.nodes = {}
-        self.turn = Nut.X
+        self.turn = Nut.O
         for i in range(3):
             for j in range(3):
                 self.nodes[i, j] = Node(i, j)
@@ -197,6 +197,8 @@ class Environment:
             system('clear')
             print(self.board)
             if self.board.turn == Nut.X:
+                if not self.board.possible_actions():
+                    break
                 while True:
                     x = int(input('X = '))
                     y = int(input('Y = '))
@@ -212,7 +214,7 @@ class Environment:
                 board.copy_board(self.board)
                 for node in board.possible_actions():
                     board.play(node)
-                    maximum = self.minimum(board, 1, 5, best)
+                    maximum = self.minimum(board, 1, 3, best)
                     if best < maximum:
                         best = maximum
                         bestNode = node
@@ -231,6 +233,8 @@ class Environment:
             if best > minimum:
                 best = minimum
             board.unplay(node)
+            if beta < best:
+                return best
         return best
 
     def maximum(self, board, depth, depthLimit, beta):
@@ -243,6 +247,8 @@ class Environment:
             if best < maximum:
                 best = maximum
             board.unplay(node)
+            if alpha > best:
+                return best
         return best
 
 
