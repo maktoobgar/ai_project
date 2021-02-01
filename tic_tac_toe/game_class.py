@@ -55,7 +55,7 @@ class Board:
     """The board that has a 3x3 plane to play"""
     def __init__(self):
         self.nodes = {}
-        self.turn = Nut.O
+        self.turn = Nut.X
         for i in range(3):
             for j in range(3):
                 self.nodes[i, j] = Node(i, j)
@@ -78,7 +78,13 @@ class Board:
 
     def unplay(self, node):
         self.switch_turn()
+        self.reset_green()
         node.nut = None
+
+    def reset_green(self):
+        for node in self.nodes:
+            if self.nodes[node].green:
+                self.nodes[node].set_green()
 
     def possible_actions(self):
         allowed = []
@@ -94,21 +100,7 @@ class Board:
                 self.nodes[i, j].nut = board.nodes[i, j].nut
         self.turn = board.turn
 
-    def score(self):
-        score = 0
-        for i in range(3):
-            if self.nodes[i, 0].nut != Nut.O and self.nodes[i, 1].nut != Nut.O and self.nodes[i, 2].nut != Nut.O:
-                score = score + 1
-        for j in range(3):
-            if self.nodes[0, j].nut != Nut.O and self.nodes[1, j].nut != Nut.O and self.nodes[2, j].nut != Nut.O:
-                score = score + 1
-        if self.nodes[0, 0].nut != Nut.O and self.nodes[1, 1].nut != Nut.O and self.nodes[2, 2].nut != Nut.O:
-            score = score + 1
-        if self.nodes[0, 2].nut != Nut.O and self.nodes[1, 1].nut != Nut.O and self.nodes[2, 0].nut != Nut.O:
-            score = score + 1
-        return score
-    
-    def negative_score(self):
+    def bot_score(self):
         score = 0
         for i in range(3):
             if self.nodes[i, 0].nut != Nut.X and self.nodes[i, 1].nut != Nut.X and self.nodes[i, 2].nut != Nut.X:
@@ -121,19 +113,33 @@ class Board:
         if self.nodes[0, 2].nut != Nut.X and self.nodes[1, 1].nut != Nut.X and self.nodes[2, 0].nut != Nut.X:
             score = score + 1
         return score
+    
+    def my_score(self):
+        score = 0
+        for i in range(3):
+            if self.nodes[i, 0].nut != Nut.O and self.nodes[i, 1].nut != Nut.O and self.nodes[i, 2].nut != Nut.O:
+                score = score + 1
+        for j in range(3):
+            if self.nodes[0, j].nut != Nut.O and self.nodes[1, j].nut != Nut.O and self.nodes[2, j].nut != Nut.O:
+                score = score + 1
+        if self.nodes[0, 0].nut != Nut.O and self.nodes[1, 1].nut != Nut.O and self.nodes[2, 2].nut != Nut.O:
+            score = score + 1
+        if self.nodes[0, 2].nut != Nut.O and self.nodes[1, 1].nut != Nut.O and self.nodes[2, 0].nut != Nut.O:
+            score = score + 1
+        return score
 
     def status(self):
         for i in range(3):
             j = 0
             if self.nodes[i, j].nut == self.nodes[i, j + 1].nut and self.nodes[i, j].nut == self.nodes[i, j + 2].nut and self.nodes[i, j].nut != None:
-                if self.nodes[i, j] == Nut.X:
+                if self.nodes[i, j].nut == Nut.X:
                     return self.winner_message(Nut.X, [[i, j], [i, j + 1], [i, j + 2]])
                 else:
                     return self.winner_message(Nut.O, [[i, j], [i, j + 1], [i, j + 2]])
         for j in range(3):
             i = 0
             if self.nodes[i, j].nut == self.nodes[i + 1, j].nut and self.nodes[i, j].nut == self.nodes[i + 2, j].nut and self.nodes[i, j].nut != None:
-                if self.nodes[i, j] == Nut.X:
+                if self.nodes[i, j].nut == Nut.X:
                     return self.winner_message(Nut.X, [[i, j], [i + 1, j], [i + 2, j]])
                 else:
                     return self.winner_message(Nut.O, [[i, j], [i + 1, j], [i + 2, j]])
@@ -152,17 +158,12 @@ class Board:
     def winner_message(self ,nut, positions):
         if nut:
             for position in positions:
-                self.nodes[position[0], position[1]].set_green()
+                if not self.nodes[position[0], position[1]].green:
+                    self.nodes[position[0], position[1]].set_green()
             if Nut.X == nut:
-                system('clear')
-                print(f'{green}We Got A Winner Who Is {end}{red}X{end}{green} Player{end}')
-                print(self)
-                return [True]
+                return [True, nut, f'{green}We Got A Winner Who Is {end}{red}{nut}{end}{green} Player{end}']
             if Nut.O == nut:
-                system('clear')
-                print(f'{green}We Got A Winner Who Is {end}{red}O{end}{green} Player{end}')
-                print(self)
-                return [True]
+                return [True, nut, f'{green}We Got A Winner Who Is {end}{red}{nut}{end}{green} Player{end}']
         return [False]
 
     def __str__(self):
@@ -214,7 +215,7 @@ class Environment:
                 board.copy_board(self.board)
                 for node in board.possible_actions():
                     board.play(node)
-                    maximum = self.minimum(board, 1, 3, best)
+                    maximum = self.minimum(board, 1, 4, best)
                     if best < maximum:
                         best = maximum
                         bestNode = node
@@ -222,32 +223,50 @@ class Environment:
                 if not board.possible_actions():
                     break
                 self.board.play(self.board.nodes[bestNode.x, bestNode.y])
+        system('clear')
+        status = self.board.status()
+        print(self.board)
+        print(status[2])
     
     def minimum(self, board, depth, depthLimit, alpha):
-        if depthLimit == depth or board.possible_actions():
-            return board.negative_score() - board.score()
+        status = board.status()
+        if status[0]:
+            print(board)
+            print(10000)
+            input()
+        if status[0]:
+            return 10000
+        if depthLimit == depth or not board.possible_actions():
+            return board.bot_score() - board.my_score()
         best = 10000
         for node in board.possible_actions():
             board.play(node)
-            minimum = self.maximum(board, depth + 1, 5, best)
+            minimum = self.maximum(board, depth + 1, depthLimit, best)
+            board.unplay(node)
             if best > minimum:
                 best = minimum
-            board.unplay(node)
-            if beta < best:
+            if alpha < best:
                 return best
         return best
 
     def maximum(self, board, depth, depthLimit, beta):
-        if depthLimit == depth or board.possible_actions():
-            return board.score() - board.negative_score()
+        status = board.status()
+        if status[0]:
+            print(board)
+            print(-10000)
+            input()
+        if status[0]:
+            return -10000
+        if depthLimit == depth or not board.possible_actions():
+            return board.bot_score() - board.my_score()
         best = -10000
         for node in board.possible_actions():
             board.play(node)
-            maximum = self.minimum(board, depth + 1, 5, best)
+            maximum = self.minimum(board, depth + 1, depthLimit, best)
+            board.unplay(node)
             if best < maximum:
                 best = maximum
-            board.unplay(node)
-            if alpha > best:
+            if beta > best:
                 return best
         return best
 
