@@ -20,4 +20,9 @@ Output test of the project is something like this:\
      style="float: left;" />
 
 ## Tic-Tac-Toe Game
-Designed the game with Alpha-Beta Pruning Algorithm (Comming Soon).
+Tic-Tac-Toe's artificial intelligence is created with __Alpha Beta Purning__ algorithm.\
+For more details about implementation, read [README](tic_tac_toe/README.md) in the ["**tic_tac_toe**"](tic_tac_toe) folder.\
+Output test of the project is something like this:\
+<img src="tic_tac_toe/output.png"
+     alt="tic tac toe"
+     style="float: left;" />
