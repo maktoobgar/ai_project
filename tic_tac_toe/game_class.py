@@ -203,7 +203,7 @@ class Environment:
                 while True:
                     x = int(input('X = '))
                     y = int(input('Y = '))
-                    if x >= 0 and x <= 2 and y >=0 and y <= 2:
+                    if x >= 0 and x <= 2 and y >= 0 and y <= 2:
                         if self.board.play(self.board.nodes[x, y]):
                             break
                         else:
@@ -215,7 +215,7 @@ class Environment:
                 board.copy_board(self.board)
                 for node in board.possible_actions():
                     board.play(node)
-                    maximum = self.minimum(board, 1, 4, best)
+                    maximum = self.minimum(board, 1, 9, best)
                     if best < maximum:
                         best = maximum
                         bestNode = node
@@ -230,10 +230,6 @@ class Environment:
     
     def minimum(self, board, depth, depthLimit, alpha):
         status = board.status()
-        if status[0]:
-            print(board)
-            print(10000)
-            input()
         if status[0]:
             return 10000
         if depthLimit == depth or not board.possible_actions():
@@ -251,10 +247,6 @@ class Environment:
 
     def maximum(self, board, depth, depthLimit, beta):
         status = board.status()
-        if status[0]:
-            print(board)
-            print(-10000)
-            input()
         if status[0]:
             return -10000
         if depthLimit == depth or not board.possible_actions():
